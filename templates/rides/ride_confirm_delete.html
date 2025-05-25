@@ -1,0 +1,33 @@
+{% extends 'rides/base_rides.html' %}
+
+{% block rides_content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Supprimer le trajet</h5>
+    </div>
+    <div class="card-body">
+        <p class="lead">Êtes-vous sûr de vouloir supprimer ce trajet ?</p>
+        <p>
+            <strong>{{ ride.departure_city }} → {{ ride.arrival_city }}</strong><br>
+            Le {{ ride.departure_date|date:"l d F Y" }} à {{ ride.departure_time|time:"H:i" }}
+        </p>
+        
+        {% if ride.requests.exists %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                Attention : Ce trajet a des demandes de réservation en cours. La suppression annulera toutes les demandes.
+            </div>
+        {% endif %}
+
+        <form method="post" data-confirm="Êtes-vous vraiment sûr de vouloir supprimer ce trajet ? Cette action est irréversible.">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                Confirmer la suppression
+            </button>
+            <a href="{% url 'ride_detail' pk=ride.pk %}" class="btn btn-outline-secondary">
+                Annuler
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %} 

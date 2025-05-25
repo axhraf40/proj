@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="card-title mb-4">Déconnexion</h2>
+                    <p class="card-text">Vous avez été déconnecté avec succès.</p>
+                    <a href="{% url 'login' %}" class="btn btn-primary">Se reconnecter</a>
+                    <a href="{% url 'rides:ride_list' %}" class="btn btn-secondary">Retour à l'accueil</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

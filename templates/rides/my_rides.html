@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Mes Trajets</h1>
+
+    <!-- Filtres -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Statut</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">Tous les statuts</option>
+                        {% if is_driver %}
+                            {% for status, label in ride_status_choices %}
+                                <option value="{{ status }}" {% if status == status_filter %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        {% else %}
+                            {% for status, label in booking_status_choices %}
+                                <option value="{{ status }}" {% if status == status_filter %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" name="date" id="date" class="form-control" value="{{ date_filter|default:'' }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                    {% if status_filter or date_filter %}
+                        <a href="{% url 'rides:my_rides' %}" class="btn btn-outline-secondary ms-2">Réinitialiser</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if is_driver %}
+    <!-- Trajets en tant que conducteur -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-0">Mes trajets en tant que conducteur</h2>
+            <a href="{% url 'rides:ride_create' %}" class="btn btn-success btn-sm">
+                <i class="fas fa-plus"></i> Nouveau trajet
+            </a>
+        </div>
+        <div class="card-body">
+            {% if rides_as_driver %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Trajet</th>
+                                <th>Véhicule</th>
+                                <th>Places</th>
+                                <th>Prix</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ride in rides_as_driver %}
+                            <tr>
+                                <td>{{ ride.departure_date|date:"d/m/Y" }}<br>{{ ride.departure_time|time:"H:i" }}</td>
+                                <td>{{ ride.departure_city }} → {{ ride.arrival_city }}</td>
+                                <td>{{ ride.vehicle.brand }} {{ ride.vehicle.model }}</td>
+                                <td>{{ ride.bookings.count }}/{{ ride.available_seats }}</td>
+                                <td>{{ ride.price }} DH</td>
+                                <td><span class="badge bg-{{ ride.status|default:'secondary' }}">{{ ride.get_status_display }}</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'rides:ride_detail' ride.pk %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'rides:ride_edit' ride.pk %}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">Vous n'avez pas encore proposé de trajets.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Demandes de réservation en attente -->
+    {% if pending_bookings %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Demandes de réservation en attente</h2>
+        </div>
+        <div class="card-body">
+            <div class="list-group">
+                {% for booking in pending_bookings %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ booking.passenger.get_full_name|default:booking.passenger.username }}</h6>
+                            <p class="mb-1">
+                                <small class="text-muted">
+                                    {{ booking.ride.departure_city }} → {{ booking.ride.arrival_city }}<br>
+                                    {{ booking.ride.departure_date|date:"d/m/Y" }} à {{ booking.ride.departure_time|time:"H:i" }}<br>
+                                    {{ booking.number_of_seats }} place(s) demandée(s)
+                                </small>
+                            </p>
+                        </div>
+                        <div>
+                            <form method="post" action="{% url 'rides:booking_action' booking.id 'confirm' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="fas fa-check"></i> Accepter
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'rides:booking_action' booking.id 'reject' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-times"></i> Refuser
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Réservations en tant que passager -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Mes réservations en tant que passager</h2>
+        </div>
+        <div class="card-body">
+            {% if bookings %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Trajet</th>
+                                <th>Conducteur</th>
+                                <th>Places</th>
+                                <th>Prix</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in bookings %}
+                            <tr>
+                                <td>{{ booking.ride.departure_date|date:"d/m/Y" }}<br>{{ booking.ride.departure_time|time:"H:i" }}</td>
+                                <td>{{ booking.ride.departure_city }} → {{ booking.ride.arrival_city }}</td>
+                                <td>{{ booking.ride.driver.get_full_name|default:booking.ride.driver.username }}</td>
+                                <td>{{ booking.number_of_seats }}</td>
+                                <td>{{ booking.ride.price }} DH</td>
+                                <td><span class="badge bg-{{ booking.status|yesno:'success,warning,danger' }}">{{ booking.get_status_display }}</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'rides:ride_detail' booking.ride.pk %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if booking.status == 'confirmed' %}
+                                            <a href="{% url 'rides:initiate_payment' booking_id=booking.id %}" class="btn btn-sm btn-success">
+                                                <i class="fas fa-money-bill"></i> Payer
+                                            </a>
+                                        {% elif booking.status == 'pending' %}
+                                            <form method="post" action="{% url 'rides:booking_action' booking.id 'cancel' %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-ban"></i> Annuler
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">Vous n'avez pas encore de réservations.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('.btn-delete').click(function(e) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce trajet ?')) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %} 

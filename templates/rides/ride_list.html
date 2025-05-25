@@ -1,0 +1,117 @@
+{% extends 'rides/base_rides.html' %}
+{% load static %}
+
+{% block ride_content %}
+<!-- Bannière de recherche -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title text-center mb-4">Rechercher un trajet</h5>
+        <form method="get" action="{% url 'rides:ride_search' %}">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                        <input type="text" class="form-control" name="departure" placeholder="Ville de départ" value="{{ departure }}">
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-map-marker"></i></span>
+                        <input type="text" class="form-control" name="arrival" placeholder="Ville d'arrivée" value="{{ arrival }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Liste des trajets -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Trajets disponibles</h5>
+    </div>
+    <div class="card-body">
+        {% if rides %}
+            <div class="list-group">
+                {% for ride in rides %}
+                    <div class="list-group-item">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-1">
+                                    <i class="fas fa-map-marker-alt text-primary"></i> {{ ride.departure_city }}
+                                    <i class="fas fa-arrow-right mx-2"></i>
+                                    <i class="fas fa-map-marker text-danger"></i> {{ ride.arrival_city }}
+                                </h5>
+                                <p class="mb-1">
+                                    <i class="fas fa-calendar"></i> {{ ride.departure_date|date:"l d F Y" }}
+                                    <i class="fas fa-clock ms-3"></i> {{ ride.departure_time|time:"H:i" }}
+                                </p>
+                                <p class="mb-1">
+                                    <i class="fas fa-user"></i> Conducteur : {{ ride.driver.get_full_name|default:ride.driver.username }}
+                                    <i class="fas fa-chair ms-3"></i> {{ ride.available_seats }} place{{ ride.available_seats|pluralize }} disponible{{ ride.available_seats|pluralize }}
+                                    <i class="fas fa-euro-sign ms-3"></i> {{ ride.price }}€ par place
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <a href="{% url 'rides:ride_detail' pk=ride.pk %}" class="btn btn-primary">
+                                    <i class="fas fa-info-circle"></i> Voir les détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if rides.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if rides.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ rides.previous_page_number }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in rides.paginator.page_range %}
+                        {% if rides.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if rides.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ rides.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <p class="lead text-muted">Aucun trajet ne correspond à votre recherche.</p>
+                {% if user.groups.all.0.name == 'Conducteurs' %}
+                <a href="{% url 'rides:ride_create' %}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus"></i> Proposer un trajet
+                </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

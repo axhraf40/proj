@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title mb-0">Inscription</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <button type="submit" class="btn btn-primary btn-block">S'inscrire</button>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    Déjà un compte ? <a href="{% url 'login' %}">Connectez-vous</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

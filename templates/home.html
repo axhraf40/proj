@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accueil - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row align-items-center py-5">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold">Voyagez ensemble, économisez plus</h1>
+            <p class="lead">
+                Trouvez ou proposez des trajets en covoiturage en toute simplicité.
+                Économique, écologique et convivial !
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                {% if not user.is_authenticated %}
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg px-4 me-md-2">
+                        <i class="fas fa-user-plus me-2"></i>S'inscrire
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                    </a>
+                {% else %}
+                    <a href="#" class="btn btn-primary btn-lg px-4 me-md-2">
+                        <i class="fas fa-search me-2"></i>Rechercher un trajet
+                    </a>
+                    <a href="#" class="btn btn-success btn-lg px-4">
+                        <i class="fas fa-plus-circle me-2"></i>Proposer un trajet
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <img src="{% static 'img/covoiturage.jpg' %}" alt="Covoiturage" class="img-fluid rounded shadow">
+        </div>
+    </div>
+
+    <div class="row py-5">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-coins fa-3x text-primary mb-3"></i>
+                    <h3>Économique</h3>
+                    <p>Partagez les frais de transport et réduisez vos dépenses.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-leaf fa-3x text-success mb-3"></i>
+                    <h3>Écologique</h3>
+                    <p>Réduisez votre empreinte carbone en partageant vos trajets.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x text-info mb-3"></i>
+                    <h3>Convivial</h3>
+                    <p>Rencontrez de nouvelles personnes et voyagez en bonne compagnie.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

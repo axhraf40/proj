@@ -1,0 +1,140 @@
+{% extends 'rides/base_rides.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{% endblock %}
+
+{% block ride_content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">{% if form.instance.pk %}Modifier le trajet{% else %}Créer un trajet{% endif %}</h2>
+                    <form method="post" id="rideForm">
+                        {% csrf_token %}
+                        
+                        <div class="alert alert-info mb-4">
+                            <h5>Estimation du prix</h5>
+                            <div id="priceEstimation" style="display: none;">
+                                <p><strong>Distance :</strong> <span id="distance"></span> km</p>
+                                <p><strong>Prix total :</strong> <span id="price"></span> DH</p>
+                                <p><strong>Votre part (80%) :</strong> <span id="driverProfit"></span> DH</p>
+                                <p><strong>Commission plateforme (20%) :</strong> <span id="platformFee"></span> DH</p>
+                            </div>
+                            <div id="priceLoading" style="display: none;">
+                                Calcul du prix en cours...
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="{{ form.vehicle.id_for_label }}">Véhicule</label>
+                            {{ form.vehicle }}
+                            {% if form.vehicle.errors %}
+                            <div class="invalid-feedback">{{ form.vehicle.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="{{ form.departure_city.id_for_label }}">Ville de départ</label>
+                            {{ form.departure_city }}
+                            {% if form.departure_city.errors %}
+                            <div class="invalid-feedback">{{ form.departure_city.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="{{ form.arrival_city.id_for_label }}">Ville d'arrivée</label>
+                            {{ form.arrival_city }}
+                            {% if form.arrival_city.errors %}
+                            <div class="invalid-feedback">{{ form.arrival_city.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="{{ form.departure_date.id_for_label }}">Date de départ</label>
+                            {{ form.departure_date }}
+                            {% if form.departure_date.errors %}
+                            <div class="invalid-feedback">{{ form.departure_date.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="{{ form.departure_time.id_for_label }}">Heure de départ</label>
+                            {{ form.departure_time }}
+                            {% if form.departure_time.errors %}
+                            <div class="invalid-feedback">{{ form.departure_time.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="{{ form.available_seats.id_for_label }}">Places disponibles</label>
+                            {{ form.available_seats }}
+                            {% if form.available_seats.errors %}
+                            <div class="invalid-feedback">{{ form.available_seats.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="{{ form.description.id_for_label }}">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            <a href="{% url 'rides:ride_list' %}" class="btn btn-secondary">Annuler</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('.select2').select2();
+
+    function updatePriceEstimation() {
+        var departureCity = $('#id_departure_city').val();
+        var arrivalCity = $('#id_arrival_city').val();
+        
+        if (departureCity && arrivalCity) {
+            $('#priceLoading').show();
+            $('#priceEstimation').hide();
+            
+            $.get('{% url "rides:calculate_price" %}', {
+                departure_city: departureCity,
+                arrival_city: arrivalCity
+            })
+            .done(function(data) {
+                $('#distance').text(data.distance_km);
+                $('#price').text(data.price);
+                $('#driverProfit').text(data.driver_profit);
+                $('#platformFee').text(data.platform_fee);
+                $('#priceEstimation').show();
+                $('#priceLoading').hide();
+            })
+            .fail(function(jqXHR) {
+                var error = jqXHR.responseJSON ? jqXHR.responseJSON.error : 'Une erreur est survenue';
+                alert(error);
+                $('#priceEstimation').hide();
+                $('#priceLoading').hide();
+            });
+        } else {
+            $('#priceEstimation').hide();
+            $('#priceLoading').hide();
+        }
+    }
+
+    // Mettre à jour l'estimation quand les villes changent
+    $('#id_departure_city, #id_arrival_city').on('change', updatePriceEstimation);
+});
+</script>
+{% endblock %} 

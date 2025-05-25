@@ -1,0 +1,55 @@
+{% extends 'rides/base_rides.html' %}
+
+{% block ride_content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Paiement du trajet</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Détails du trajet</h6>
+                        <p>
+                            <strong>De :</strong> {{ booking.ride.departure_city }}<br>
+                            <strong>À :</strong> {{ booking.ride.arrival_city }}<br>
+                            <strong>Date :</strong> {{ booking.ride.departure_date }}<br>
+                            <strong>Heure :</strong> {{ booking.ride.departure_time }}<br>
+                            <strong>Places réservées :</strong> {{ booking.number_of_seats }}
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6>Détails du paiement</h6>
+                        <p>
+                            <strong>Montant total :</strong> {{ payment.amount }} DH<br>
+                            <strong>Statut :</strong> {{ payment.get_status_display }}
+                        </p>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">Instructions de paiement</h6>
+                        <p class="mb-0">
+                            1. Un code de validation à 6 chiffres vous a été envoyé par email.<br>
+                            2. Effectuez le virement du montant indiqué sur notre compte bancaire.<br>
+                            3. Conservez le code de validation et ne le communiquez au conducteur qu'après le trajet.<br>
+                            4. Une fois le code validé, le conducteur recevra automatiquement sa part (80% du montant).
+                        </p>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <strong>Important :</strong> Ne communiquez le code de validation au conducteur qu'une fois le trajet terminé.
+                    </div>
+
+                    <div class="text-center">
+                        <a href="{% url 'rides:ride_detail' booking.ride.id %}" class="btn btn-primary">
+                            Retour aux détails du trajet
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

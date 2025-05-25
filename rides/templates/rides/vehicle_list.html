@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Mes véhicules</h2>
+        <a href="{% url 'rides:vehicle_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Ajouter un véhicule
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if vehicles %}
+        <div class="row">
+            {% for vehicle in vehicles %}
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ vehicle.brand }} {{ vehicle.model }}</h5>
+                            <p class="card-text">
+                                <strong>Immatriculation :</strong> {{ vehicle.license_plate }}<br>
+                                <strong>Année :</strong> {{ vehicle.year }}<br>
+                                <strong>Couleur :</strong> {{ vehicle.color }}<br>
+                                <strong>Nombre de places :</strong> {{ vehicle.seats }}
+                            </p>
+                            <div class="btn-group">
+                                <a href="{% url 'rides:vehicle_edit' vehicle.pk %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                                <a href="{% url 'rides:vehicle_delete' vehicle.pk %}" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Vous n'avez pas encore ajouté de véhicule. Cliquez sur "Ajouter un véhicule" pour commencer.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

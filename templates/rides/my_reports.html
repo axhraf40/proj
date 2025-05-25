@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes signalements{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-4">Mes signalements</h2>
+
+    <!-- Signalements effectués -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Signalements que j'ai effectués</h4>
+        </div>
+        <div class="card-body">
+            {% if reports_made %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Trajet</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports_made %}
+                            <tr>
+                                <td>{{ report.created_at|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'rides:ride_detail' report.ride.pk %}">
+                                        {{ report.ride.departure_city }} → {{ report.ride.arrival_city }}
+                                    </a>
+                                </td>
+                                <td>{{ report.get_report_type_display }}</td>
+                                <td>
+                                    <span class="badge {% if report.status == 'pending' %}bg-warning
+                                                      {% elif report.status == 'investigating' %}bg-info
+                                                      {% elif report.status == 'resolved' %}bg-success
+                                                      {% else %}bg-secondary{% endif %}">
+                                        {{ report.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#reportModal{{ report.pk }}">
+                                        <i class="fas fa-eye"></i> Détails
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Vous n'avez effectué aucun signalement.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Signalements reçus -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h4 class="mb-0">Signalements me concernant</h4>
+        </div>
+        <div class="card-body">
+            {% if reports_received %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Trajet</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports_received %}
+                            <tr>
+                                <td>{{ report.created_at|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'rides:ride_detail' report.ride.pk %}">
+                                        {{ report.ride.departure_city }} → {{ report.ride.arrival_city }}
+                                    </a>
+                                </td>
+                                <td>{{ report.get_report_type_display }}</td>
+                                <td>
+                                    <span class="badge {% if report.status == 'pending' %}bg-warning
+                                                      {% elif report.status == 'investigating' %}bg-info
+                                                      {% elif report.status == 'resolved' %}bg-success
+                                                      {% else %}bg-secondary{% endif %}">
+                                        {{ report.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Aucun signalement ne vous concerne.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modals pour les détails des signalements -->
+{% for report in reports_made %}
+<div class="modal fade" id="reportModal{{ report.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails du signalement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Type :</strong> {{ report.get_report_type_display }}</p>
+                <p><strong>Description :</strong><br>{{ report.description }}</p>
+                {% if report.evidence %}
+                    <p><strong>Preuve jointe :</strong><br>
+                    <a href="{{ report.evidence.url }}" target="_blank">Voir le document</a></p>
+                {% endif %}
+                <p><strong>Statut :</strong> {{ report.get_status_display }}</p>
+                <p><strong>Date de création :</strong> {{ report.created_at|date:"d/m/Y H:i" }}</p>
+                <p><strong>Dernière mise à jour :</strong> {{ report.updated_at|date:"d/m/Y H:i" }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %} 
